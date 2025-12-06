@@ -45,7 +45,7 @@ auto AnalyseFunctions(const std::vector<std::string> &files,
                 std::views::join | std::views::transform([&metric_extractor](const auto &func) {
                     return std::make_pair(func, metric_extractor.Get(func));
                 });
-    std::vector<std::pair<function::Function, metric::MetricResult>> result;
+    std::vector<std::pair<function::Function, metric::MetricResults>> result;
     std::ranges::copy(view, std::back_inserter(result));
     return result;
 }
@@ -97,7 +97,8 @@ auto SplitByFiles(const auto &analysis) {
  */
 void AccumulateFunctionAnalysis(const auto &analysis,
                                 const analyzer::metric_accumulator::MetricsAccumulator &accumulator) {
-    std::ranges::for_each(analysis, [](const auto &elem) { accumulator.AccumulateNextFunctionResults(elem.second); });
+    std::ranges::for_each(analysis,
+                          [&accumulator](const auto &elem) { accumulator.AccumulateNextFunctionResults(elem.second); });
 }
 
 }  // namespace analyzer
