@@ -40,11 +40,18 @@ namespace rs = std::ranges;
  */
 auto AnalyseFunctions(const std::vector<std::string> &files,
                       const analyzer::metric::MetricExtractor &metric_extractor) {
-    // здесь ваш код
+    auto view = files | std::views::transform([](const auto &filename) { return file::File(filename); }) |
+                std::views::transform([](const auto &file) { return function::FunctionExtractor{}.Get(file); }) |
+                std::views::join | std::views::transform([&metric_extractor](const auto &func) {
+                    return std::make_pair(func, metric_extractor.Get(func));
+                });
+    std::vector<std::pair<function::Function, metric::MetricResult>> result;
+    std::ranges::copy(view, std::back_inserter(result));
+    return result;
 }
 
 /**
- * 
+ *
  * @brief Группирует результаты анализа по классам.
  *
  * Эта функция:
@@ -62,7 +69,9 @@ auto AnalyseFunctions(const std::vector<std::string> &files,
  * действительно исчезают из результата.
  */
 auto SplitByClasses(const auto &analysis) {
-    // здесь ваш код
+    return analysis | std::views::filter([](const auto &a) { return a.first.class_name.has_value(); }) |
+           std::views::chunk_by(
+               [](const auto &l, const auto &r) { return l.first.class_name.value() == r.first.class_name.value(); });
 }
 
 /**
@@ -74,7 +83,8 @@ auto SplitByClasses(const auto &analysis) {
  * - Использует `chunk_by`, поэтому **порядок функций в `analysis` должен быть по файлам**.
  */
 auto SplitByFiles(const auto &analysis) {
-    // здесь ваш код
+    return analysis |
+           std::views::chunk_by([](const auto &l, const auto &r) { return l.first.filename == r.first.filename; });
 }
 
 /**
@@ -87,7 +97,7 @@ auto SplitByFiles(const auto &analysis) {
  */
 void AccumulateFunctionAnalysis(const auto &analysis,
                                 const analyzer::metric_accumulator::MetricsAccumulator &accumulator) {
-    // здесь ваш код
+    std::ranges::for_each(analysis, [](const auto &elem) { accumulator.AccumulateNextFunctionResults(elem.second); });
 }
 
 }  // namespace analyzer
