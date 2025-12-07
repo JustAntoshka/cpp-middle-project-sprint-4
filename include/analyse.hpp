@@ -40,14 +40,14 @@ namespace rs = std::ranges;
  */
 auto AnalyseFunctions(const std::vector<std::string> &files,
                       const analyzer::metric::MetricExtractor &metric_extractor) {
-    auto view = files | std::views::transform([](const auto &filename) { return file::File(filename); }) |
-                std::views::transform([](const auto &file) { return function::FunctionExtractor{}.Get(file); }) |
-                std::views::join | std::views::transform([&metric_extractor](const auto &func) {
-                    return std::make_pair(func, metric_extractor.Get(func));
-                });
-    std::vector<std::pair<function::Function, metric::MetricResults>> result;
-    std::ranges::copy(view, std::back_inserter(result));
-    return result;
+    auto functions = files | std::views::transform([](const auto &filename) { return file::File(filename); }) |
+                     std::views::transform([](const auto &file) { return function::FunctionExtractor{}.Get(file); }) |
+                     std::views::join | std::ranges::to<std::vector<function::Function>>();
+
+    return functions | std::views::transform([&metric_extractor](const auto &func) {
+               return std::make_pair(func, metric_extractor.Get(func));
+           }) |
+           std::ranges::to<std::vector<std::pair<function::Function, metric::MetricResults>>>();
 }
 
 /**
