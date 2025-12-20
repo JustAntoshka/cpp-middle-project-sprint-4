@@ -34,9 +34,10 @@ MetricResult::ValueType CyclomaticComplexityMetric::CalculateImpl(const function
     // - case в match-выражениях
     // - assert
     // - тернарный оператор (conditional_expression)
-    constexpr std::array<std::string_view, 9> complexity_nodes = {
+    constexpr std::array complexity_nodes{
         "if_statement",            // if
         "elif_statement",          // elif
+        "elif_clause",             // elif
         "for_statement",           // for
         "while_statement",         // while
         "try_statement",           // try
@@ -78,6 +79,6 @@ MetricResult::ValueType CyclomaticComplexityMetric::CalculateImpl(const function
     };
 
     auto counts = complexity_nodes | std::views::transform(count_occurences);
-    return std::ranges::fold_left(counts, 0, std::plus{});
+    return std::ranges::fold_left(counts, 1, std::plus{});
 }
 }  // namespace analyzer::metric::metric_impl
