@@ -18,6 +18,11 @@ TEST(AverageAccumulatorCheckThrow, NonFinalized) {
     EXPECT_THROW(acc.Get(), std::runtime_error);
 }
 
+TEST(AverageAccumulatorCheckThrow, NonAccumulatedFinalize) {
+    AverageAccumulator acc;
+    EXPECT_THROW(acc.Finalize(), std::runtime_error);
+}
+
 TEST(AverageAccumulatorCheckThrow, Reset) {
     AverageAccumulator acc;
     acc.Reset();
