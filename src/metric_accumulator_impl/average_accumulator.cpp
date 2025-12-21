@@ -20,10 +20,13 @@
 namespace analyzer::metric_accumulator::metric_accumulator_impl {
 
 void AverageAccumulator::Accumulate(const metric::MetricResult &metric_result) {
-    sum += std::get<int>(metric_result.value);
+    sum += metric_result.value;
     count++;
 }
+
 void AverageAccumulator::Finalize() {
+    if (count == 0)
+        throw std::runtime_error("AverageAccumulator::Finalize() called before Accumulate()");
     average = static_cast<double>(sum) / count;
     is_finalized = true;
 }
